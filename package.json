@@ -1,6 +1,6 @@
 {
     "name": "@noise-xyz/noise-types",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Type definitions for Noise",
     "types": "dist/index.d.ts",
     "private": false,
