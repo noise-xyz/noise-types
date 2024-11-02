@@ -1,8 +1,9 @@
 {
     "name": "@noise-xyz/noise-types",
     "version": "1.0.0",
-    "description": "Type definitions for Noise project",
+    "description": "Type definitions for Noise",
     "types": "dist/index.d.ts",
+    "private": false,
     "exports": {
         ".": {
             "types": "./dist/index.d.ts"
@@ -34,9 +35,8 @@
     "scripts": {
         "build": "tsc",
         "prepare": "npm run build",
-        "prepublishOnly": "npm test && npm run lint",
-        "preversion": "npm run lint",
-        "version": "npm run format && git add -A",
+        "prepublish": "npm run build",
+        "version": "git add -A",
         "postversion": "git push && git push --tags"
     },
     "publishConfig": {
