@@ -1,9 +1,52 @@
 {
-    "name": "noise-types",
-    "module": "index.ts",
+    "name": "@noise-xyz/noise-types",
+    "version": "1.0.0",
+    "description": "Type definitions for Noise project",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts"
+        },
+        "./conversions": {
+            "types": "./dist/conversions/index.d.ts"
+        },
+        "./database": {
+            "types": "./dist/database/index.d.ts"
+        },
+        "./events": {
+            "types": "./dist/events/index.d.ts"
+        },
+        "./positions": {
+            "types": "./dist/positions/index.d.ts"
+        },
+        "./trading": {
+            "types": "./dist/trading/index.d.ts"
+        },
+        "./utils": {
+            "types": "./dist/utils/numbers.d.ts"
+        }
+    },
+    "files": [
+        "dist",
+        "LICENSE",
+        "README.md"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "prepare": "npm run build",
+        "prepublishOnly": "npm test && npm run lint",
+        "preversion": "npm run lint",
+        "version": "npm run format && git add -A",
+        "postversion": "git push && git push --tags"
+    },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com",
+        "access": "restricted"
+    },
     "type": "module",
     "devDependencies": {
-        "@types/bun": "latest"
+        "@types/bun": "latest",
+        "typescript": "^5.0.0"
     },
     "peerDependencies": {
         "typescript": "^5.0.0"
