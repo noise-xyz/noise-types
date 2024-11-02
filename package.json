@@ -22,6 +22,10 @@
             "types": "./dist/events/index.d.ts",
             "default": "./dist/events/index.js"
         },
+        "./logs": {
+            "types": "./dist/logs/index.d.ts",
+            "default": "./dists/logs/index.js"
+        },
         "./positions": {
             "types": "./dist/positions/index.d.ts",
             "default": "./dist/positions/index.js"
@@ -48,6 +52,9 @@
             ],
             "events": [
                 "./dist/events/index.d.ts"
+            ],
+            "logs": [
+                "./dist/logs/index.d.ts"
             ],
             "positions": [
                 "./dist/positions/index.d.ts"
