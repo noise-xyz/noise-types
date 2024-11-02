@@ -6,11 +6,6 @@ import {
     numeric,
     boolean,
 } from "drizzle-orm/pg-core";
-import {
-    positionsTable,
-    activityEventsTable,
-    tradesTable,
-} from "@/database/tables";
 
 export const usersTable = pgTable("users", {
     id: uuid("id").defaultRandom().primaryKey(),

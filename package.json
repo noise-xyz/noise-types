@@ -9,6 +9,7 @@
         "typescript": "^5.0.0"
     },
     "dependencies": {
+        "bignumber.js": "^9.1.2",
         "drizzle-orm": "^0.36.0"
     }
 }
