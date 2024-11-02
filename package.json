@@ -1,30 +1,63 @@
 {
     "name": "@noise-xyz/noise-types",
-    "version": "1.0.1",
-    "description": "Type definitions for Noise",
-    "types": "dist/index.d.ts",
+    "version": "1.0.0",
+    "description": "Type definitions for Noise project",
+    "types": "./dist/index.d.ts",
+    "main": "./dist/index.js",
     "private": false,
     "exports": {
         ".": {
-            "types": "./dist/index.d.ts"
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
         },
         "./conversions": {
-            "types": "./dist/conversions/index.d.ts"
+            "types": "./dist/conversions/index.d.ts",
+            "default": "./dist/conversions/index.js"
         },
         "./database": {
-            "types": "./dist/database/index.d.ts"
+            "types": "./dist/database/index.d.ts",
+            "default": "./dist/database/index.js"
         },
         "./events": {
-            "types": "./dist/events/index.d.ts"
+            "types": "./dist/events/index.d.ts",
+            "default": "./dist/events/index.js"
         },
         "./positions": {
-            "types": "./dist/positions/index.d.ts"
+            "types": "./dist/positions/index.d.ts",
+            "default": "./dist/positions/index.js"
         },
         "./trading": {
-            "types": "./dist/trading/index.d.ts"
+            "types": "./dist/trading/index.d.ts",
+            "default": "./dist/trading/index.js"
         },
         "./utils": {
-            "types": "./dist/utils/numbers.d.ts"
+            "types": "./dist/utils/numbers.d.ts",
+            "default": "./dist/utils/numbers.js"
+        }
+    },
+    "typesVersions": {
+        "*": {
+            "*": [
+                "./dist/*"
+            ],
+            "conversions": [
+                "./dist/conversions/index.d.ts"
+            ],
+            "database": [
+                "./dist/database/index.d.ts"
+            ],
+            "events": [
+                "./dist/events/index.d.ts"
+            ],
+            "positions": [
+                "./dist/positions/index.d.ts"
+            ],
+            "trading": [
+                "./dist/trading/index.d.ts"
+            ],
+            "utils": [
+                "./dist/utils/numbers.d.ts"
+            ]
         }
     },
     "files": [
