@@ -8,64 +8,65 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./database": {
       "types": "./dist/database/index.d.ts",
-      "import": "./dist/database/index.js",
-      "require": "./dist/database/index.js"
+      "require": "./dist/database/index.js",
+      "default": "./dist/database/index.js"
     },
     "./database/tables": {
       "types": "./dist/database/tables/index.d.ts",
-      "import": "./dist/database/tables/index.js",
-      "require": "./dist/database/tables/index.js"
+      "require": "./dist/database/tables/index.js",
+      "default": "./dist/database/tables/index.js"
     },
     "./database/types": {
       "types": "./dist/database/types/index.d.ts",
-      "import": "./dist/database/types/index.js",
-      "require": "./dist/database/types/index.js"
+      "require": "./dist/database/types/index.js",
+      "default": "./dist/database/types/index.js"
     },
     "./database/relations": {
       "types": "./dist/database/relations/index.d.ts",
-      "import": "./dist/database/relations/index.js",
-      "require": "./dist/database/relations/index.js"
+      "require": "./dist/database/relations/index.js",
+      "default": "./dist/database/relations/index.js"
     },
     "./conversions": {
       "types": "./dist/conversions/index.d.ts",
-      "import": "./dist/conversions/index.js",
-      "require": "./dist/conversions/index.js"
+      "require": "./dist/conversions/index.js",
+      "default": "./dist/conversions/index.js"
     },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
-      "import": "./dist/utils/index.js",
-      "require": "./dist/utils/index.js"
+      "require": "./dist/utils/index.js",
+      "default": "./dist/utils/index.js"
     },
     "./logs": {
       "types": "./dist/logs/index.d.ts",
-      "import": "./dist/logs/index.js",
-      "require": "./dist/logs/index.js"
+      "require": "./dist/logs/index.js",
+      "default": "./dist/logs/index.js"
     },
     "./positions": {
       "types": "./dist/positions/index.d.ts",
-      "import": "./dist/positions/index.js",
-      "require": "./dist/positions/index.js"
+      "require": "./dist/positions/index.js",
+      "default": "./dist/positions/index.js"
     },
     "./events": {
       "types": "./dist/events/index.d.ts",
-      "import": "./dist/events/index.js",
-      "require": "./dist/events/index.js"
+      "require": "./dist/events/index.js",
+      "default": "./dist/events/index.js"
     },
     "./trading": {
       "types": "./dist/trading/index.d.ts",
-      "import": "./dist/trading/index.js",
-      "require": "./dist/trading/index.js"
+      "require": "./dist/trading/index.js",
+      "default": "./dist/trading/index.js"
     }
   },
   "typesVersions": {
     "*": {
       "*": [
-        "./dist/*"
+        "./dist/*",
+        "./dist/*/index.d.ts"
       ]
     }
   },
@@ -86,7 +87,7 @@
     "registry": "https://npm.pkg.github.com",
     "access": "restricted"
   },
-  "type": "module",
+  "type": "commonjs",
   "devDependencies": {
     "@types/bun": "latest",
     "typescript": "^5.0.0"
@@ -95,7 +96,8 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "bignumber.js": "^9.1.2",
+    "bignumber.js": "^9.1.1",
     "drizzle-orm": "^0.36.0"
-  }
+  },
+  "module": "./dist/index.js"
 }

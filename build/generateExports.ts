@@ -11,6 +11,7 @@ interface GeneratorOptions {
     ignoreDirs: Set<string>;
     fileExtensions: Set<string>;
     excludePatterns: Set<string>;
+    packageName: string;
 }
 
 class ExportGenerator {
@@ -22,6 +23,7 @@ class ExportGenerator {
             ignoreDirs: new Set([".git", "dist", "node_modules", "build"]),
             fileExtensions: new Set([".ts"]),
             excludePatterns: new Set([".d.ts", ".test.ts", ".spec.ts"]),
+            packageName: "@noise-xyz/noise-types",
             ...options,
         };
     }
@@ -125,20 +127,18 @@ class ExportGenerator {
             const content = await readFile(packageJsonPath, "utf-8");
             const pkg = JSON.parse(content);
 
-            // Reset exports field
-            pkg.exports = {};
-
-            // Add exports for each directory level independently
-            const structure = await this.scanDirectory(rootDir);
-
-            // Root level exports only include root-level files
-            pkg.exports["."] = {
-                types: "./dist/index.d.ts",
-                import: "./dist/index.js",
-                require: "./dist/index.js",
+            // Update package.json for CommonJS
+            pkg.type = "commonjs"; // Changed from 'module' to 'commonjs'
+            pkg.exports = {
+                ".": {
+                    types: "./dist/index.d.ts",
+                    require: "./dist/index.js",
+                    default: "./dist/index.js",
+                },
             };
 
-            // Process directories recursively
+            // Process directories recursively for exports
+            const structure = await this.scanDirectory(rootDir);
             const addExportsForDirectory = async (
                 dirStructure: FileStructure,
                 currentPath: string = "",
@@ -152,8 +152,8 @@ class ExportGenerator {
                         : dirName;
                     pkg.exports[`./${exportPath}`] = {
                         types: `./dist/${exportPath}/index.d.ts`,
-                        import: `./dist/${exportPath}/index.js`,
                         require: `./dist/${exportPath}/index.js`,
+                        default: `./dist/${exportPath}/index.js`,
                     };
                     await addExportsForDirectory(subStructure, exportPath);
                 }
@@ -161,11 +161,13 @@ class ExportGenerator {
 
             await addExportsForDirectory(structure);
 
-            // Add typesVersions field for better TypeScript path resolution
-            pkg.typesVersions = {
-                "*": {
-                    "*": ["./dist/*"],
-                },
+            pkg.types = "./dist/index.d.ts";
+            pkg.main = "./dist/index.js";
+
+            // Add dependencies if they don't exist
+            pkg.dependencies = {
+                ...pkg.dependencies,
+                "bignumber.js": "^9.1.1", // Add BigNumber.js dependency
             };
 
             await writeFile(packageJsonPath, JSON.stringify(pkg, null, 2));
@@ -194,19 +196,16 @@ class ExportGenerator {
             const structure = await this.scanDirectory(this.options.rootDir);
 
             console.log("Generating index files...");
-            // Generate index.ts files for each directory level independently
             const processDirectory = async (
                 dir: string,
                 struct: FileStructure,
             ) => {
-                // Generate index file for current directory
                 const indexContent = await this.generateIndexContent(
                     struct,
                     dir,
                 );
                 await this.writeIndexFile(dir, indexContent);
 
-                // Process subdirectories
                 for (const [dirName, subStructure] of struct.directories) {
                     const currentDir = join(dir, dirName);
                     await processDirectory(currentDir, subStructure);
@@ -215,7 +214,7 @@ class ExportGenerator {
 
             await processDirectory(this.options.rootDir, structure);
 
-            console.log("Updating package.json...");
+            console.log("Updating package.json and tsconfig.json...");
             await this.updatePackageJson(this.options.rootDir);
 
             console.log("Export generation completed successfully!");
@@ -226,7 +225,6 @@ class ExportGenerator {
     }
 }
 
-// Example usage
 const generator = new ExportGenerator({
     rootDir: process.cwd(),
     ignoreDirs: new Set([".git", "dist", "node_modules", "build"]),
