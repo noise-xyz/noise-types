@@ -28,208 +28,155 @@ class ExportGenerator {
         };
     }
 
-    private shouldProcessFile(filename: string): boolean {
-        const ext = filename.slice(filename.lastIndexOf("."));
-        if (!this.options.fileExtensions.has(ext)) return false;
-        return ![...this.options.excludePatterns].some((pattern) =>
-            filename.endsWith(pattern),
-        );
-    }
-
-    private shouldProcessDir(dirname: string): boolean {
-        return !this.options.ignoreDirs.has(dirname);
-    }
-
-    private async scanDirectory(dir: string): Promise<FileStructure> {
-        const structure: FileStructure = {
-            files: [],
-            directories: new Map(),
-        };
+    private async updateTsConfig(rootDir: string): Promise<void> {
+        const tsconfigPath = join(rootDir, "tsconfig.json");
 
         try {
-            const entries = await readdir(dir);
-
-            for (const entry of entries) {
-                const fullPath = join(dir, entry);
-                const stats = await stat(fullPath);
-
-                if (stats.isDirectory()) {
-                    if (this.shouldProcessDir(entry)) {
-                        structure.directories.set(
-                            entry,
-                            await this.scanDirectory(fullPath),
-                        );
-                    }
-                } else if (stats.isFile() && this.shouldProcessFile(entry)) {
-                    structure.files.push(entry);
-                }
-            }
-        } catch (error) {
-            console.error(`Error scanning directory ${dir}:`, error);
-            throw error;
-        }
-
-        return structure;
-    }
-
-    private generateExportStatement(file: string): string {
-        const baseName = file.slice(0, file.lastIndexOf("."));
-        return `export * from './${baseName}';`;
-    }
-
-    private async clearExistingIndexFiles(dir: string): Promise<void> {
-        try {
-            const indexPath = join(dir, "index.ts");
-            try {
-                await unlink(indexPath);
-            } catch (error) {
-                // Ignore error if file doesn't exist
-                if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-                    throw error;
-                }
-            }
-
-            const entries = await readdir(dir);
-            for (const entry of entries) {
-                const fullPath = join(dir, entry);
-                const stats = await stat(fullPath);
-
-                if (stats.isDirectory() && this.shouldProcessDir(entry)) {
-                    await this.clearExistingIndexFiles(fullPath);
-                }
-            }
-        } catch (error) {
-            console.error(`Error clearing index files in ${dir}:`, error);
-            throw error;
-        }
-    }
-
-    private async generateIndexContent(
-        structure: FileStructure,
-        currentDir: string,
-    ): Promise<string> {
-        const exports: string[] = [];
-
-        // Export only local files in this directory
-        for (const file of structure.files) {
-            if (file !== "index.ts") {
-                exports.push(this.generateExportStatement(file));
-            }
-        }
-
-        // DO NOT export subdirectories to maintain directory-level import restriction
-        return exports.join("\n") + "\n";
-    }
-
-    private async updatePackageJson(rootDir: string): Promise<void> {
-        const packageJsonPath = join(rootDir, "package.json");
-        try {
-            const content = await readFile(packageJsonPath, "utf-8");
-            const pkg = JSON.parse(content);
-
-            // Update package.json for CommonJS
-            pkg.type = "commonjs"; // Changed from 'module' to 'commonjs'
-            pkg.exports = {
-                ".": {
-                    types: "./dist/index.d.ts",
-                    require: "./dist/index.js",
-                    default: "./dist/index.js",
+            let tsconfig: any = {
+                compilerOptions: {
+                    target: "ES2020",
+                    module: "CommonJS",
+                    moduleResolution: "node",
+                    baseUrl: ".",
+                    paths: {
+                        "@/*": ["./*"],
+                    },
+                    esModuleInterop: true,
+                    declaration: true,
+                    declarationMap: true,
+                    sourceMap: true,
+                    outDir: "./dist",
+                    rootDir: ".",
+                    strict: true,
+                    skipLibCheck: true,
+                    forceConsistentCasingInFileNames: true,
                 },
+                include: ["**/*.ts"],
+                exclude: [
+                    "node_modules",
+                    "dist",
+                    "**/*.test.ts",
+                    "**/*.spec.ts",
+                ],
             };
 
-            // Process directories recursively for exports
-            const structure = await this.scanDirectory(rootDir);
-            const addExportsForDirectory = async (
-                dirStructure: FileStructure,
-                currentPath: string = "",
-            ) => {
-                for (const [
-                    dirName,
-                    subStructure,
-                ] of dirStructure.directories) {
-                    const exportPath = currentPath
-                        ? `${currentPath}/${dirName}`
-                        : dirName;
-                    pkg.exports[`./${exportPath}`] = {
-                        types: `./dist/${exportPath}/index.d.ts`,
-                        require: `./dist/${exportPath}/index.js`,
-                        default: `./dist/${exportPath}/index.js`,
-                    };
-                    await addExportsForDirectory(subStructure, exportPath);
-                }
-            };
+            try {
+                const existingContent = await readFile(tsconfigPath, "utf-8");
+                const existingConfig = JSON.parse(existingContent);
+                tsconfig = {
+                    ...existingConfig,
+                    compilerOptions: {
+                        ...existingConfig.compilerOptions,
+                        ...tsconfig.compilerOptions,
+                    },
+                };
+            } catch (error) {
+                console.log("Creating new tsconfig.json...");
+            }
 
-            await addExportsForDirectory(structure);
+            await writeFile(tsconfigPath, JSON.stringify(tsconfig, null, 2));
 
-            pkg.types = "./dist/index.d.ts";
-            pkg.main = "./dist/index.js";
+            // Create build script with fixed regex
+            const buildScriptPath = join(rootDir, "build.js");
+            const buildScript = `
+const { execSync } = require('child_process');
+const { readFileSync, writeFileSync, readdirSync, statSync } = require('fs');
+const { join, relative, dirname } = require('path');
 
-            // Add dependencies if they don't exist
-            pkg.dependencies = {
-                ...pkg.dependencies,
-                "bignumber.js": "^9.1.1", // Add BigNumber.js dependency
-            };
-
-            await writeFile(packageJsonPath, JSON.stringify(pkg, null, 2));
-        } catch (error) {
-            console.error("Error updating package.json:", error);
-            throw error;
-        }
+function updateImportsInFile(filePath) {
+  const content = readFileSync(filePath, 'utf-8');
+  const importRegex = /from ["']@\\/([^"']+)["']/g;
+  
+  const updatedContent = content.replace(
+    importRegex,
+    (match, path) => {
+      const currentDir = dirname(filePath);
+      const targetPath = join(process.cwd(), path);
+      let relativePath = relative(currentDir, targetPath)
+        .replace(/\\\\/g, '/');
+      if (!relativePath.startsWith('.')) {
+        relativePath = './' + relativePath;
+      }
+      return \`from '\${relativePath}'\`;
     }
+  );
+  writeFileSync(filePath, updatedContent);
+}
 
-    private async writeIndexFile(dir: string, content: string): Promise<void> {
-        const indexPath = join(dir, "index.ts");
-        try {
-            await writeFile(indexPath, content);
+function processDirectory(dir) {
+  const entries = readdirSync(dir);
+  for (const entry of entries) {
+    const fullPath = join(dir, entry);
+    const stats = statSync(fullPath);
+
+    if (stats.isDirectory() && !['node_modules', 'dist', '.git'].includes(entry)) {
+      processDirectory(fullPath);
+    } else if (fullPath.endsWith('.ts') && !fullPath.endsWith('.d.ts') && 
+               !fullPath.endsWith('.test.ts') && !fullPath.endsWith('.spec.ts')) {
+      console.log('Processing:', fullPath);
+      try {
+        updateImportsInFile(fullPath);
+      } catch (error) {
+        console.error(\`Error processing \${fullPath}:\`, error);
+      }
+    }
+  }
+}
+
+try {
+  // Update imports in TypeScript files
+  console.log('Updating import paths...');
+  processDirectory('.');
+
+  // Run TypeScript compiler
+  console.log('Compiling TypeScript...');
+  execSync('tsc', { stdio: 'inherit' });
+} catch (error) {
+  console.error('Build failed:', error);
+  process.exit(1);
+}
+`;
+
+            await writeFile(buildScriptPath, buildScript);
+
+            // Update package.json scripts
+            const packageJsonPath = join(rootDir, "package.json");
+            const packageJson = JSON.parse(
+                await readFile(packageJsonPath, "utf-8"),
+            );
+            packageJson.scripts = {
+                ...packageJson.scripts,
+                build: "node build.js",
+                prepare: "npm run build",
+            };
+            await writeFile(
+                packageJsonPath,
+                JSON.stringify(packageJson, null, 2),
+            );
         } catch (error) {
-            console.error(`Error writing index file at ${indexPath}:`, error);
+            console.error("Error updating tsconfig.json:", error);
             throw error;
         }
     }
 
     public async generate(): Promise<void> {
         try {
-            console.log("Clearing existing index files...");
-            await this.clearExistingIndexFiles(this.options.rootDir);
+            console.log("Updating configuration...");
+            await this.updateTsConfig(this.options.rootDir);
 
-            console.log("Scanning directory structure...");
-            const structure = await this.scanDirectory(this.options.rootDir);
-
-            console.log("Generating index files...");
-            const processDirectory = async (
-                dir: string,
-                struct: FileStructure,
-            ) => {
-                const indexContent = await this.generateIndexContent(
-                    struct,
-                    dir,
-                );
-                await this.writeIndexFile(dir, indexContent);
-
-                for (const [dirName, subStructure] of struct.directories) {
-                    const currentDir = join(dir, dirName);
-                    await processDirectory(currentDir, subStructure);
-                }
-            };
-
-            await processDirectory(this.options.rootDir, structure);
-
-            console.log("Updating package.json and tsconfig.json...");
-            await this.updatePackageJson(this.options.rootDir);
-
-            console.log("Export generation completed successfully!");
+            console.log("Generator completed successfully!");
+            console.log('Please run "npm run build" to compile the package.');
         } catch (error) {
-            console.error("Error generating exports:", error);
+            console.error("Error running generator:", error);
             throw error;
         }
     }
 }
 
+// Example usage
 const generator = new ExportGenerator({
     rootDir: process.cwd(),
-    ignoreDirs: new Set([".git", "dist", "node_modules", "build"]),
-    fileExtensions: new Set([".ts"]),
-    excludePatterns: new Set([".d.ts", ".test.ts", ".spec.ts"]),
+    packageName: "@noise-xyz/noise-types",
 });
 
 // Run the generator

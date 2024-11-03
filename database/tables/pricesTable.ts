@@ -5,7 +5,7 @@ import {
     uuid,
     varchar,
 } from "drizzle-orm/pg-core";
-import { assetsTable } from "@/database/tables";
+import { assetsTable } from './';
 
 export const pricesTable = pgTable("prices", {
     id: uuid("id").defaultRandom().primaryKey(),

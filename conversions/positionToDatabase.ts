@@ -1,6 +1,6 @@
-import { positionsTable } from "@/database/tables";
-import type { Position } from "@/positions";
-import { toPostgresNumeric } from "@/utils/numbers";
+import { positionsTable } from '../database/tables';
+import type { Position } from '../positions';
+import { toPostgresNumeric } from '../utils/numbers';
 
 /**
  * Converts a Position object to database format

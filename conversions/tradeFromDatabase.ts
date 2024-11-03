@@ -1,7 +1,7 @@
-import { tradesTable } from "@/database/tables";
-import type { Trade } from "@/trading";
-import { TradeSide, TradeStatus } from "@/trading";
-import { fromPostgresNumeric } from "@/utils/numbers";
+import { tradesTable } from '../database/tables';
+import type { Trade } from '../trading';
+import { TradeSide, TradeStatus } from '../trading';
+import { fromPostgresNumeric } from '../utils/numbers';
 
 /**
  * Converts a database trade record to a Trade object

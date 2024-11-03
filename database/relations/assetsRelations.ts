@@ -4,7 +4,7 @@ import {
     pricesTable,
     activityEventsTable,
     tradesTable,
-} from "@/database/tables";
+} from '../tables';
 
 export const assetsRelations = relations(assetsTable, ({ many }) => ({
     prices: many(pricesTable),

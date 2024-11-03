@@ -1,4 +1,4 @@
-import { TradeSide, TradeStatus } from "@/trading";
+import { TradeSide, TradeStatus } from './';
 import BigNumber from "bignumber.js";
 
 export type Trade = {

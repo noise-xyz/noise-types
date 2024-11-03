@@ -5,7 +5,7 @@ import {
     positionsTable,
     assetsTable,
     activityEventsTable,
-} from "@/database/tables";
+} from '../tables';
 import {
     usersRelations,
     tradesRelations,
@@ -13,7 +13,7 @@ import {
     positionsRelations,
     assetsRelations,
     activityEventsRelations,
-} from "@/database/relations";
+} from '../relations';
 
 export type DrizzleSchema = {
     usersTable: typeof usersTable;

@@ -1,7 +1,7 @@
-import { activityEventsTable } from "@/database/tables";
-import type { ActivityEvent, EventType } from "@/events";
-import { TradeSide } from "@/trading";
-import { fromPostgresNumeric } from "@/utils/numbers";
+import { activityEventsTable } from '../database/tables';
+import type { ActivityEvent, EventType } from '../events';
+import { TradeSide } from '../trading';
+import { fromPostgresNumeric } from '../utils/numbers';
 
 /**
  * Converts a database activity event record to an ActivityEvent object

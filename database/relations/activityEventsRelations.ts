@@ -3,7 +3,7 @@ import {
     activityEventsTable,
     assetsTable,
     usersTable,
-} from "@/database/tables";
+} from '../tables';
 
 export const activityEventsRelations = relations(
     activityEventsTable,

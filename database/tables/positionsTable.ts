@@ -6,7 +6,7 @@ import {
     timestamp,
     integer,
 } from "drizzle-orm/pg-core";
-import { usersTable, assetsTable } from "@/database/tables";
+import { usersTable, assetsTable } from './';
 
 export const positionsTable = pgTable("positions", {
     id: uuid("id").defaultRandom().primaryKey(),

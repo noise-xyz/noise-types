@@ -1,103 +1,103 @@
 {
-  "name": "@noise-xyz/noise-types",
-  "version": "1.0.13",
-  "description": "Type definitions for Noise project",
-  "types": "./dist/index.d.ts",
-  "main": "./dist/index.js",
-  "private": false,
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "default": "./dist/index.js"
+    "name": "@noise-xyz/noise-types",
+    "version": "1.0.13",
+    "description": "Type definitions for Noise project",
+    "types": "./dist/index.d.ts",
+    "main": "./dist/index.js",
+    "private": false,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "require": "./dist/index.js",
+            "default": "./dist/index.js"
+        },
+        "./database": {
+            "types": "./dist/database/index.d.ts",
+            "require": "./dist/database/index.js",
+            "default": "./dist/database/index.js"
+        },
+        "./database/tables": {
+            "types": "./dist/database/tables/index.d.ts",
+            "require": "./dist/database/tables/index.js",
+            "default": "./dist/database/tables/index.js"
+        },
+        "./database/types": {
+            "types": "./dist/database/types/index.d.ts",
+            "require": "./dist/database/types/index.js",
+            "default": "./dist/database/types/index.js"
+        },
+        "./database/relations": {
+            "types": "./dist/database/relations/index.d.ts",
+            "require": "./dist/database/relations/index.js",
+            "default": "./dist/database/relations/index.js"
+        },
+        "./conversions": {
+            "types": "./dist/conversions/index.d.ts",
+            "require": "./dist/conversions/index.js",
+            "default": "./dist/conversions/index.js"
+        },
+        "./utils": {
+            "types": "./dist/utils/index.d.ts",
+            "require": "./dist/utils/index.js",
+            "default": "./dist/utils/index.js"
+        },
+        "./logs": {
+            "types": "./dist/logs/index.d.ts",
+            "require": "./dist/logs/index.js",
+            "default": "./dist/logs/index.js"
+        },
+        "./positions": {
+            "types": "./dist/positions/index.d.ts",
+            "require": "./dist/positions/index.js",
+            "default": "./dist/positions/index.js"
+        },
+        "./events": {
+            "types": "./dist/events/index.d.ts",
+            "require": "./dist/events/index.js",
+            "default": "./dist/events/index.js"
+        },
+        "./trading": {
+            "types": "./dist/trading/index.d.ts",
+            "require": "./dist/trading/index.js",
+            "default": "./dist/trading/index.js"
+        }
     },
-    "./database": {
-      "types": "./dist/database/index.d.ts",
-      "require": "./dist/database/index.js",
-      "default": "./dist/database/index.js"
+    "typesVersions": {
+        "*": {
+            "*": [
+                "./dist/*",
+                "./dist/*/index.d.ts"
+            ]
+        }
     },
-    "./database/tables": {
-      "types": "./dist/database/tables/index.d.ts",
-      "require": "./dist/database/tables/index.js",
-      "default": "./dist/database/tables/index.js"
+    "files": [
+        "dist",
+        "LICENSE",
+        "README.md"
+    ],
+    "scripts": {
+        "prebuild": "bun build/generateExports.ts",
+        "build": "node build.js",
+        "prepare": "npm run build",
+        "prepublish": "bun run build",
+        "version": "git add -A",
+        "postversion": "git push && git push --tags"
     },
-    "./database/types": {
-      "types": "./dist/database/types/index.d.ts",
-      "require": "./dist/database/types/index.js",
-      "default": "./dist/database/types/index.js"
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com",
+        "access": "restricted"
     },
-    "./database/relations": {
-      "types": "./dist/database/relations/index.d.ts",
-      "require": "./dist/database/relations/index.js",
-      "default": "./dist/database/relations/index.js"
+    "type": "commonjs",
+    "devDependencies": {
+        "@types/bun": "latest",
+        "typescript": "^5.0.0"
     },
-    "./conversions": {
-      "types": "./dist/conversions/index.d.ts",
-      "require": "./dist/conversions/index.js",
-      "default": "./dist/conversions/index.js"
+    "peerDependencies": {
+        "typescript": "^5.0.0"
     },
-    "./utils": {
-      "types": "./dist/utils/index.d.ts",
-      "require": "./dist/utils/index.js",
-      "default": "./dist/utils/index.js"
+    "dependencies": {
+        "bignumber.js": "^9.1.1",
+        "drizzle-orm": "^0.36.0"
     },
-    "./logs": {
-      "types": "./dist/logs/index.d.ts",
-      "require": "./dist/logs/index.js",
-      "default": "./dist/logs/index.js"
-    },
-    "./positions": {
-      "types": "./dist/positions/index.d.ts",
-      "require": "./dist/positions/index.js",
-      "default": "./dist/positions/index.js"
-    },
-    "./events": {
-      "types": "./dist/events/index.d.ts",
-      "require": "./dist/events/index.js",
-      "default": "./dist/events/index.js"
-    },
-    "./trading": {
-      "types": "./dist/trading/index.d.ts",
-      "require": "./dist/trading/index.js",
-      "default": "./dist/trading/index.js"
-    }
-  },
-  "typesVersions": {
-    "*": {
-      "*": [
-        "./dist/*",
-        "./dist/*/index.d.ts"
-      ]
-    }
-  },
-  "files": [
-    "dist",
-    "LICENSE",
-    "README.md"
-  ],
-  "scripts": {
-    "prebuild": "bun build/generateExports.ts",
-    "build": "tsc",
-    "prepare": "bun run build",
-    "prepublish": "bun run build",
-    "version": "git add -A",
-    "postversion": "git push && git push --tags"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "restricted"
-  },
-  "type": "commonjs",
-  "devDependencies": {
-    "@types/bun": "latest",
-    "typescript": "^5.0.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "bignumber.js": "^9.1.1",
-    "drizzle-orm": "^0.36.0"
-  },
-  "module": "./dist/index.js"
+    "module": "./dist/index.js"
 }

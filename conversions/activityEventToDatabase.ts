@@ -1,6 +1,6 @@
-import { activityEventsTable } from "@/database/tables";
-import type { ActivityEvent } from "@/events";
-import { toPostgresNumeric } from "@/utils/numbers";
+import { activityEventsTable } from '../database/tables';
+import type { ActivityEvent } from '../events';
+import { toPostgresNumeric } from '../utils/numbers';
 /**
  * Converts an ActivityEvent object to database format
  */
