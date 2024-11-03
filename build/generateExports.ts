@@ -1,24 +1,18 @@
 // build/generateExports.ts
 import { readFileSync, writeFileSync, statSync, readdirSync } from "fs";
-import { join, basename } from "path";
+import { join, basename, relative } from "path";
 
-// Directories and files that should be ignored
 const IGNORED_PATTERNS = [
-    // System and hidden files/directories
     /^\.git$/,
     /^\.github$/,
     /^\.vscode$/,
     /^\.idea$/,
     /^\.DS_Store$/,
     /^\.env/,
-
-    // Build and dependency directories
     /^dist$/,
     /^node_modules$/,
     /^build$/,
     /^coverage$/,
-
-    // Lock files and configs
     /^package-lock\.json$/,
     /^yarn\.lock$/,
     /^bun\.lockb$/,
@@ -26,16 +20,12 @@ const IGNORED_PATTERNS = [
     /^\.eslintrc/,
     /^\.prettierrc/,
     /^\.babelrc/,
-
-    // Temp and log files
     /^npm-debug\.log$/,
     /^yarn-debug\.log$/,
     /^yarn-error\.log$/,
     /^\.log$/,
     /^\.tmp$/,
     /^temp$/,
-
-    // Documentation and misc
     /^docs$/,
     /^README\.md$/,
     /^LICENSE$/,
@@ -54,12 +44,19 @@ function isDirectory(path: string) {
     }
 }
 
-function getDirectories(srcPath: string): string[] {
+function getAllDirectories(srcPath: string): string[] {
     try {
-        return readdirSync(srcPath)
-            .filter(shouldInclude)
-            .filter((file) => isDirectory(join(srcPath, file)))
-            .filter((dir) => dir.charAt(0) !== "."); // Extra check for hidden directories
+        const entries = readdirSync(srcPath, { withFileTypes: true });
+
+        const dirs = entries
+            .filter((entry) => entry.isDirectory())
+            .filter((entry) => shouldInclude(entry.name))
+            .filter((entry) => !entry.name.startsWith("."))
+            .map((entry) => join(srcPath, entry.name));
+
+        const subdirs = dirs.flatMap((dir) => getAllDirectories(dir));
+
+        return [...dirs, ...subdirs];
     } catch {
         return [];
     }
@@ -78,90 +75,102 @@ function generateExportsConfig(directories: string[]) {
     };
 
     directories.forEach((dir) => {
-        // Add main directory exports
-        exports[`./${dir}/*`] = {
-            types: `./dist/${dir}/*.d.ts`,
-            default: `./dist/${dir}/*.js`,
+        const relativePath = relative(".", dir);
+
+        // Add main directory export
+        exports[`./${relativePath}`] = {
+            types: `./dist/${relativePath}/index.d.ts`,
+            default: `./dist/${relativePath}/index.js`,
         };
 
-        // Add subdirectories exports
-        const subdirs = getDirectories(dir).filter(shouldInclude);
+        // Add wildcard export for directory contents
+        exports[`./${relativePath}/*`] = {
+            types: `./dist/${relativePath}/*.d.ts`,
+            default: `./dist/${relativePath}/*.js`,
+        };
 
-        subdirs.forEach((subdir) => {
-            exports[`./${dir}/${subdir}/*`] = {
-                types: `./dist/${dir}/${subdir}/*.d.ts`,
-                default: `./dist/${dir}/${subdir}/*.js`,
-            };
-        });
-
-        // Add typesVersions
-        typesVersions["*"][`${dir}/*`] = [`./dist/${dir}/*`];
-        subdirs.forEach((subdir) => {
-            typesVersions["*"][`${dir}/${subdir}/*`] = [
-                `./dist/${dir}/${subdir}/*`,
-            ];
-        });
+        // Add to typesVersions
+        typesVersions["*"][relativePath] = [`./dist/${relativePath}`];
+        typesVersions["*"][`${relativePath}/*`] = [`./dist/${relativePath}/*`];
     });
 
     return { exports, typesVersions };
 }
 
-// Generate index files
 function generateIndexFile(directory: string) {
-    const files = readdirSync(directory)
-        .filter(shouldInclude)
-        .filter(
-            (file) =>
-                file.endsWith(".ts") &&
-                file !== "index.ts" &&
-                !file.endsWith(".test.ts") &&
-                !file.endsWith(".spec.ts"),
-        );
+    try {
+        const entries = readdirSync(directory, { withFileTypes: true });
 
-    const indexContent = files
-        .map((file) => {
+        // Get all .ts files (excluding special cases)
+        const files = entries
+            .filter((entry) => entry.isFile())
+            .filter(
+                (entry) =>
+                    entry.name.endsWith(".ts") &&
+                    entry.name !== "index.ts" &&
+                    !entry.name.endsWith(".test.ts") &&
+                    !entry.name.endsWith(".spec.ts"),
+            )
+            .map((entry) => entry.name);
+
+        // Get all directories
+        const dirs = entries
+            .filter((entry) => entry.isDirectory())
+            .filter((entry) => shouldInclude(entry.name))
+            .map((entry) => entry.name);
+
+        // Generate exports for both files and directories
+        const fileExports = files.map((file) => {
             const baseName = basename(file, ".ts");
             return `export * from './${baseName}';`;
-        })
-        .join("\n");
+        });
 
-    if (indexContent) {
-        writeFileSync(join(directory, "index.ts"), indexContent);
+        const dirExports = dirs.map((dir) => `export * from './${dir}';`);
+
+        const indexContent = [...fileExports, ...dirExports].join("\n");
+
+        if (indexContent) {
+            writeFileSync(join(directory, "index.ts"), indexContent);
+        }
+    } catch (error) {
+        console.error(`Error generating index for ${directory}:`, error);
     }
 }
 
-function processDirectory(directory: string) {
-    if (isDirectory(directory) && shouldInclude(basename(directory))) {
-        generateIndexFile(directory);
+function generateMainIndex(directories: string[]) {
+    // Get only top-level directories
+    const topLevelDirs = directories
+        .filter((dir) => !dir.includes("/") && !dir.includes("\\"))
+        .map((dir) => basename(dir));
 
-        // Process subdirectories
-        readdirSync(directory)
-            .map((file) => join(directory, file))
-            .filter(
-                (path) => isDirectory(path) && shouldInclude(basename(path)),
-            )
-            .forEach(processDirectory);
-    }
+    const indexContent = topLevelDirs
+        .map((dir) => `export * from './${dir}';`)
+        .join("\n");
+
+    writeFileSync("index.ts", indexContent);
 }
 
 // Main execution
 try {
-    // Generate the configurations
-    const directories = getDirectories(".").filter(
-        (dir) => !dir.startsWith("."),
-    ); // Extra safety check for hidden directories
+    // Get all directories including subdirectories
+    const allDirs = getAllDirectories(".")
+        .filter((dir) => !dir.startsWith("./."))
+        .map((dir) => dir.replace(/^\.\//, "")); // Remove leading ./
 
-    const config = generateExportsConfig(directories);
+    // Generate exports configuration
+    const config = generateExportsConfig(allDirs);
 
     // Update package.json
     const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
     packageJson.exports = config.exports;
     packageJson.typesVersions = config.typesVersions;
-
     writeFileSync("package.json", JSON.stringify(packageJson, null, 2));
 
-    // Process all directories
-    directories.forEach(processDirectory);
+    // Generate index files for all directories
+    allDirs.forEach((dir) => generateIndexFile(dir));
+
+    // Generate main index.ts
+    generateMainIndex(allDirs);
 
     console.log("Successfully generated exports and index files");
 } catch (error) {
