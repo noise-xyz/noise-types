@@ -10,61 +10,17 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./database": {
-      "types": "./dist/database/index.d.ts",
-      "default": "./dist/database/index.js"
-    },
     "./database/*": {
       "types": "./dist/database/*.d.ts",
       "default": "./dist/database/*.js"
     },
-    "./conversions": {
-      "types": "./dist/conversions/index.d.ts",
-      "default": "./dist/conversions/index.js"
+    "./database/relations": {
+      "types": "./dist/database/relations/index.d.ts",
+      "default": "./dist/database/relations/index.js"
     },
-    "./conversions/*": {
-      "types": "./dist/conversions/*.d.ts",
-      "default": "./dist/conversions/*.js"
-    },
-    "./utils": {
-      "types": "./dist/utils/index.d.ts",
-      "default": "./dist/utils/index.js"
-    },
-    "./utils/*": {
-      "types": "./dist/utils/*.d.ts",
-      "default": "./dist/utils/*.js"
-    },
-    "./logs": {
-      "types": "./dist/logs/index.d.ts",
-      "default": "./dist/logs/index.js"
-    },
-    "./logs/*": {
-      "types": "./dist/logs/*.d.ts",
-      "default": "./dist/logs/*.js"
-    },
-    "./positions": {
-      "types": "./dist/positions/index.d.ts",
-      "default": "./dist/positions/index.js"
-    },
-    "./positions/*": {
-      "types": "./dist/positions/*.d.ts",
-      "default": "./dist/positions/*.js"
-    },
-    "./events": {
-      "types": "./dist/events/index.d.ts",
-      "default": "./dist/events/index.js"
-    },
-    "./events/*": {
-      "types": "./dist/events/*.d.ts",
-      "default": "./dist/events/*.js"
-    },
-    "./trading": {
-      "types": "./dist/trading/index.d.ts",
-      "default": "./dist/trading/index.js"
-    },
-    "./trading/*": {
-      "types": "./dist/trading/*.d.ts",
-      "default": "./dist/trading/*.js"
+    "./database/relations/*": {
+      "types": "./dist/database/relations/*.d.ts",
+      "default": "./dist/database/relations/*.js"
     },
     "./database/tables": {
       "types": "./dist/database/tables/index.d.ts",
@@ -82,58 +38,41 @@
       "types": "./dist/database/types/*.d.ts",
       "default": "./dist/database/types/*.js"
     },
-    "./database/relations": {
-      "types": "./dist/database/relations/index.d.ts",
-      "default": "./dist/database/relations/index.js"
+    "./trading/*": {
+      "types": "./dist/trading/*.d.ts",
+      "default": "./dist/trading/*.js"
     },
-    "./database/relations/*": {
-      "types": "./dist/database/relations/*.d.ts",
-      "default": "./dist/database/relations/*.js"
+    "./events/*": {
+      "types": "./dist/events/*.d.ts",
+      "default": "./dist/events/*.js"
+    },
+    "./logs/*": {
+      "types": "./dist/logs/*.d.ts",
+      "default": "./dist/logs/*.js"
+    },
+    "./positions/*": {
+      "types": "./dist/positions/*.d.ts",
+      "default": "./dist/positions/*.js"
+    },
+    "./conversions/*": {
+      "types": "./dist/conversions/*.d.ts",
+      "default": "./dist/conversions/*.js"
+    },
+    "./utils/*": {
+      "types": "./dist/utils/*.d.ts",
+      "default": "./dist/utils/*.js"
     }
   },
   "typesVersions": {
     "*": {
-      "database": [
-        "./dist/database"
-      ],
       "database/*": [
         "./dist/database/*"
       ],
-      "conversions": [
-        "./dist/conversions"
+      "database/relations": [
+        "./dist/database/relations"
       ],
-      "conversions/*": [
-        "./dist/conversions/*"
-      ],
-      "utils": [
-        "./dist/utils"
-      ],
-      "utils/*": [
-        "./dist/utils/*"
-      ],
-      "logs": [
-        "./dist/logs"
-      ],
-      "logs/*": [
-        "./dist/logs/*"
-      ],
-      "positions": [
-        "./dist/positions"
-      ],
-      "positions/*": [
-        "./dist/positions/*"
-      ],
-      "events": [
-        "./dist/events"
-      ],
-      "events/*": [
-        "./dist/events/*"
-      ],
-      "trading": [
-        "./dist/trading"
-      ],
-      "trading/*": [
-        "./dist/trading/*"
+      "database/relations/*": [
+        "./dist/database/relations/*"
       ],
       "database/tables": [
         "./dist/database/tables"
@@ -147,11 +86,23 @@
       "database/types/*": [
         "./dist/database/types/*"
       ],
-      "database/relations": [
-        "./dist/database/relations"
+      "trading/*": [
+        "./dist/trading/*"
       ],
-      "database/relations/*": [
-        "./dist/database/relations/*"
+      "events/*": [
+        "./dist/events/*"
+      ],
+      "logs/*": [
+        "./dist/logs/*"
+      ],
+      "positions/*": [
+        "./dist/positions/*"
+      ],
+      "conversions/*": [
+        "./dist/conversions/*"
+      ],
+      "utils/*": [
+        "./dist/utils/*"
       ]
     }
   },

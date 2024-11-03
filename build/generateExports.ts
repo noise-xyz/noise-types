@@ -1,6 +1,6 @@
 // build/generateExports.ts
 import { readFileSync, writeFileSync, statSync, readdirSync } from "fs";
-import { join, basename, relative } from "path";
+import { join, basename, dirname } from "path";
 
 const IGNORED_PATTERNS = [
     /^\.git$/,
@@ -32,16 +32,49 @@ const IGNORED_PATTERNS = [
     /^CHANGELOG\.md$/,
 ];
 
+type ModuleConfig = {
+    requireSubmodule: boolean;
+    submodules: string[];
+};
+
+type ModuleStructure = {
+    [key: string]: ModuleConfig;
+};
+
+// Define the module structure
+const MODULE_STRUCTURE: ModuleStructure = {
+    database: {
+        requireSubmodule: true,
+        submodules: ["relations", "tables", "types"],
+    },
+    trading: {
+        requireSubmodule: true,
+        submodules: [],
+    },
+    events: {
+        requireSubmodule: true,
+        submodules: [],
+    },
+    logs: {
+        requireSubmodule: true,
+        submodules: [],
+    },
+    positions: {
+        requireSubmodule: true,
+        submodules: [],
+    },
+    conversions: {
+        requireSubmodule: true,
+        submodules: [],
+    },
+    utils: {
+        requireSubmodule: true,
+        submodules: [],
+    },
+};
+
 function shouldInclude(name: string): boolean {
     return !IGNORED_PATTERNS.some((pattern) => pattern.test(name));
-}
-
-function isDirectory(path: string) {
-    try {
-        return statSync(path).isDirectory();
-    } catch {
-        return false;
-    }
 }
 
 function getAllDirectories(srcPath: string): string[] {
@@ -74,24 +107,38 @@ function generateExportsConfig(directories: string[]) {
         "*": {},
     };
 
-    directories.forEach((dir) => {
-        const relativePath = relative(".", dir);
+    Object.entries(MODULE_STRUCTURE).forEach(([moduleName, config]) => {
+        if (!config.requireSubmodule) {
+            exports[`./${moduleName}`] = {
+                types: `./dist/${moduleName}/index.d.ts`,
+                default: `./dist/${moduleName}/index.js`,
+            };
+            typesVersions["*"][moduleName] = [`./dist/${moduleName}`];
+        }
 
-        // Add main directory export
-        exports[`./${relativePath}`] = {
-            types: `./dist/${relativePath}/index.d.ts`,
-            default: `./dist/${relativePath}/index.js`,
+        exports[`./${moduleName}/*`] = {
+            types: `./dist/${moduleName}/*.d.ts`,
+            default: `./dist/${moduleName}/*.js`,
         };
+        typesVersions["*"][`${moduleName}/*`] = [`./dist/${moduleName}/*`];
 
-        // Add wildcard export for directory contents
-        exports[`./${relativePath}/*`] = {
-            types: `./dist/${relativePath}/*.d.ts`,
-            default: `./dist/${relativePath}/*.js`,
-        };
+        config.submodules.forEach((submodule) => {
+            exports[`./${moduleName}/${submodule}`] = {
+                types: `./dist/${moduleName}/${submodule}/index.d.ts`,
+                default: `./dist/${moduleName}/${submodule}/index.js`,
+            };
+            exports[`./${moduleName}/${submodule}/*`] = {
+                types: `./dist/${moduleName}/${submodule}/*.d.ts`,
+                default: `./dist/${moduleName}/${submodule}/*.js`,
+            };
 
-        // Add to typesVersions
-        typesVersions["*"][relativePath] = [`./dist/${relativePath}`];
-        typesVersions["*"][`${relativePath}/*`] = [`./dist/${relativePath}/*`];
+            typesVersions["*"][`${moduleName}/${submodule}`] = [
+                `./dist/${moduleName}/${submodule}`,
+            ];
+            typesVersions["*"][`${moduleName}/${submodule}/*`] = [
+                `./dist/${moduleName}/${submodule}/*`,
+            ];
+        });
     });
 
     return { exports, typesVersions };
@@ -99,9 +146,12 @@ function generateExportsConfig(directories: string[]) {
 
 function generateIndexFile(directory: string) {
     try {
+        const dirName = basename(directory);
+        const parentDir = basename(dirname(directory));
+        const moduleConfig = MODULE_STRUCTURE[parentDir];
+
         const entries = readdirSync(directory, { withFileTypes: true });
 
-        // Get all .ts files (excluding special cases)
         const files = entries
             .filter((entry) => entry.isFile())
             .filter(
@@ -113,21 +163,25 @@ function generateIndexFile(directory: string) {
             )
             .map((entry) => entry.name);
 
-        // Get all directories
-        const dirs = entries
-            .filter((entry) => entry.isDirectory())
-            .filter((entry) => shouldInclude(entry.name))
-            .map((entry) => entry.name);
+        if (
+            moduleConfig?.requireSubmodule &&
+            !moduleConfig.submodules.includes(dirName)
+        ) {
+            const content =
+                `// This module requires importing from specific submodules\n` +
+                `// Please import from one of: ${moduleConfig.submodules.join(
+                    ", ",
+                )}`;
+            writeFileSync(join(directory, "index.ts"), content);
+            return;
+        }
 
-        // Generate exports for both files and directories
         const fileExports = files.map((file) => {
             const baseName = basename(file, ".ts");
             return `export * from './${baseName}';`;
         });
 
-        const dirExports = dirs.map((dir) => `export * from './${dir}';`);
-
-        const indexContent = [...fileExports, ...dirExports].join("\n");
+        const indexContent = fileExports.join("\n");
 
         if (indexContent) {
             writeFileSync(join(directory, "index.ts"), indexContent);
@@ -137,40 +191,35 @@ function generateIndexFile(directory: string) {
     }
 }
 
-function generateMainIndex(directories: string[]) {
-    // Get only top-level directories
-    const topLevelDirs = directories
-        .filter((dir) => !dir.includes("/") && !dir.includes("\\"))
-        .map((dir) => basename(dir));
-
-    const indexContent = topLevelDirs
-        .map((dir) => `export * from './${dir}';`)
+function generateMainIndex() {
+    const indexContent = Object.entries(MODULE_STRUCTURE)
+        .map(([moduleName, config]) => {
+            if (config.requireSubmodule) {
+                return `export const ${moduleName} = {};`;
+            } else {
+                return `export * as ${moduleName} from './${moduleName}';`;
+            }
+        })
         .join("\n");
 
     writeFileSync("index.ts", indexContent);
 }
 
-// Main execution
 try {
-    // Get all directories including subdirectories
     const allDirs = getAllDirectories(".")
         .filter((dir) => !dir.startsWith("./."))
-        .map((dir) => dir.replace(/^\.\//, "")); // Remove leading ./
+        .map((dir) => dir.replace(/^\.\//, ""));
 
-    // Generate exports configuration
     const config = generateExportsConfig(allDirs);
 
-    // Update package.json
     const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
     packageJson.exports = config.exports;
     packageJson.typesVersions = config.typesVersions;
     writeFileSync("package.json", JSON.stringify(packageJson, null, 2));
 
-    // Generate index files for all directories
     allDirs.forEach((dir) => generateIndexFile(dir));
 
-    // Generate main index.ts
-    generateMainIndex(allDirs);
+    generateMainIndex();
 
     console.log("Successfully generated exports and index files");
 } catch (error) {
