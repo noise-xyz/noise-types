@@ -1,2 +1,2 @@
-export * from "./DrizzleInstance";
-export * from "./DrizzleSchema";
+export * from './DrizzleInstance';
+export * from './DrizzleSchema';

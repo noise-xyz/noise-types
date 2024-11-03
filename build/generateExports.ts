@@ -1,4 +1,4 @@
-import { readdir, stat, writeFile, readFile } from "fs/promises";
+import { readdir, stat, writeFile, readFile, unlink } from "fs/promises";
 import { join, relative, dirname } from "path";
 
 interface FileStructure {
@@ -72,7 +72,34 @@ class ExportGenerator {
 
     private generateExportStatement(file: string): string {
         const baseName = file.slice(0, file.lastIndexOf("."));
-        return `export * from \"./${baseName}\";`;
+        return `export * from './${baseName}';`;
+    }
+
+    private async clearExistingIndexFiles(dir: string): Promise<void> {
+        try {
+            const indexPath = join(dir, "index.ts");
+            try {
+                await unlink(indexPath);
+            } catch (error) {
+                // Ignore error if file doesn't exist
+                if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+                    throw error;
+                }
+            }
+
+            const entries = await readdir(dir);
+            for (const entry of entries) {
+                const fullPath = join(dir, entry);
+                const stats = await stat(fullPath);
+
+                if (stats.isDirectory() && this.shouldProcessDir(entry)) {
+                    await this.clearExistingIndexFiles(fullPath);
+                }
+            }
+        } catch (error) {
+            console.error(`Error clearing index files in ${dir}:`, error);
+            throw error;
+        }
     }
 
     private async generateIndexContent(
@@ -81,18 +108,14 @@ class ExportGenerator {
     ): Promise<string> {
         const exports: string[] = [];
 
-        // Export local files
+        // Export only local files in this directory
         for (const file of structure.files) {
             if (file !== "index.ts") {
                 exports.push(this.generateExportStatement(file));
             }
         }
 
-        // Export subdirectories
-        for (const [dirName] of structure.directories) {
-            exports.push(`export * from './${dirName}';`);
-        }
-
+        // DO NOT export subdirectories to maintain directory-level import restriction
         return exports.join("\n") + "\n";
     }
 
@@ -102,24 +125,48 @@ class ExportGenerator {
             const content = await readFile(packageJsonPath, "utf-8");
             const pkg = JSON.parse(content);
 
-            // Ensure exports field exists
-            pkg.exports = {
-                ".": {
-                    types: "./dist/index.d.ts",
-                    import: "./dist/index.js",
-                    require: "./dist/index.js",
-                },
+            // Reset exports field
+            pkg.exports = {};
+
+            // Add exports for each directory level independently
+            const structure = await this.scanDirectory(rootDir);
+
+            // Root level exports only include root-level files
+            pkg.exports["."] = {
+                types: "./dist/index.d.ts",
+                import: "./dist/index.js",
+                require: "./dist/index.js",
             };
 
-            // Add exports for each subdirectory
-            const structure = await this.scanDirectory(rootDir);
-            for (const [dirName] of structure.directories) {
-                pkg.exports[`./${dirName}`] = {
-                    types: `./dist/${dirName}/index.d.ts`,
-                    import: `./dist/${dirName}/index.js`,
-                    require: `./dist/${dirName}/index.js`,
-                };
-            }
+            // Process directories recursively
+            const addExportsForDirectory = async (
+                dirStructure: FileStructure,
+                currentPath: string = "",
+            ) => {
+                for (const [
+                    dirName,
+                    subStructure,
+                ] of dirStructure.directories) {
+                    const exportPath = currentPath
+                        ? `${currentPath}/${dirName}`
+                        : dirName;
+                    pkg.exports[`./${exportPath}`] = {
+                        types: `./dist/${exportPath}/index.d.ts`,
+                        import: `./dist/${exportPath}/index.js`,
+                        require: `./dist/${exportPath}/index.js`,
+                    };
+                    await addExportsForDirectory(subStructure, exportPath);
+                }
+            };
+
+            await addExportsForDirectory(structure);
+
+            // Add typesVersions field for better TypeScript path resolution
+            pkg.typesVersions = {
+                "*": {
+                    "*": ["./dist/*"],
+                },
+            };
 
             await writeFile(packageJsonPath, JSON.stringify(pkg, null, 2));
         } catch (error) {
@@ -140,29 +187,28 @@ class ExportGenerator {
 
     public async generate(): Promise<void> {
         try {
+            console.log("Clearing existing index files...");
+            await this.clearExistingIndexFiles(this.options.rootDir);
+
             console.log("Scanning directory structure...");
             const structure = await this.scanDirectory(this.options.rootDir);
 
             console.log("Generating index files...");
-            // Generate root index.ts
-            const rootIndexContent = await this.generateIndexContent(
-                structure,
-                this.options.rootDir,
-            );
-            await this.writeIndexFile(this.options.rootDir, rootIndexContent);
-
-            // Generate index.ts for each subdirectory
+            // Generate index.ts files for each directory level independently
             const processDirectory = async (
                 dir: string,
                 struct: FileStructure,
             ) => {
+                // Generate index file for current directory
+                const indexContent = await this.generateIndexContent(
+                    struct,
+                    dir,
+                );
+                await this.writeIndexFile(dir, indexContent);
+
+                // Process subdirectories
                 for (const [dirName, subStructure] of struct.directories) {
                     const currentDir = join(dir, dirName);
-                    const indexContent = await this.generateIndexContent(
-                        subStructure,
-                        currentDir,
-                    );
-                    await this.writeIndexFile(currentDir, indexContent);
                     await processDirectory(currentDir, subStructure);
                 }
             };
