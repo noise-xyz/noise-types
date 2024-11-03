@@ -1,1 +1,1 @@
-export type { Position } from "@/positions/Position";
+export * from './Position';

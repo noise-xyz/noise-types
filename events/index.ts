@@ -1,2 +1,2 @@
-export type { ActivityEvent } from "@/events/ActivityEvent";
-export { EventType } from "@/events/EventType";
+export * from './ActivityEvent';
+export * from './EventType';
