@@ -1,138 +1,131 @@
 {
-  "name": "@noise-xyz/noise-types",
-  "version": "1.0.10",
-  "description": "Type definitions for Noise project",
-  "types": "./dist/index.d.ts",
-  "main": "./dist/index.js",
-  "private": false,
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+    "name": "@noise-xyz/noise-types",
+    "version": "1.0.10",
+    "description": "Type definitions for Noise project",
+    "types": "./dist/index.d.ts",
+    "main": "./dist/index.js",
+    "private": false,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.js"
+        },
+        "./database": {
+            "types": "./dist/database/index.d.ts",
+            "import": "./dist/database/index.js",
+            "require": "./dist/database/index.js"
+        },
+        "./conversions": {
+            "types": "./dist/conversions/index.d.ts",
+            "import": "./dist/conversions/index.js",
+            "require": "./dist/conversions/index.js"
+        },
+        "./utils": {
+            "types": "./dist/utils/index.d.ts",
+            "import": "./dist/utils/index.js",
+            "require": "./dist/utils/index.js"
+        },
+        "./logs": {
+            "types": "./dist/logs/index.d.ts",
+            "import": "./dist/logs/index.js",
+            "require": "./dist/logs/index.js"
+        },
+        "./positions": {
+            "types": "./dist/positions/index.d.ts",
+            "import": "./dist/positions/index.js",
+            "require": "./dist/positions/index.js"
+        },
+        "./events": {
+            "types": "./dist/events/index.d.ts",
+            "import": "./dist/events/index.js",
+            "require": "./dist/events/index.js"
+        },
+        "./trading": {
+            "types": "./dist/trading/index.d.ts",
+            "import": "./dist/trading/index.js",
+            "require": "./dist/trading/index.js"
+        }
     },
-    "./database/*": {
-      "types": "./dist/database/*.d.ts",
-      "default": "./dist/database/*.js"
+    "typesVersions": {
+        "*": {
+            "database/relations": [
+                "./dist/database/relations"
+            ],
+            "database/tables": [
+                "./dist/database/tables"
+            ],
+            "database/types": [
+                "./dist/database/types"
+            ],
+            "database/*": [
+                "./dist/database/*"
+            ],
+            "trading": [
+                "./dist/trading"
+            ],
+            "trading/*": [
+                "./dist/trading/*"
+            ],
+            "events": [
+                "./dist/events"
+            ],
+            "events/*": [
+                "./dist/events/*"
+            ],
+            "logs": [
+                "./dist/logs"
+            ],
+            "logs/*": [
+                "./dist/logs/*"
+            ],
+            "positions": [
+                "./dist/positions"
+            ],
+            "positions/*": [
+                "./dist/positions/*"
+            ],
+            "conversions": [
+                "./dist/conversions"
+            ],
+            "conversions/*": [
+                "./dist/conversions/*"
+            ],
+            "utils": [
+                "./dist/utils"
+            ],
+            "utils/*": [
+                "./dist/utils/*"
+            ]
+        }
     },
-    "./database/relations": {
-      "types": "./dist/database/relations/index.d.ts",
-      "default": "./dist/database/relations/index.js"
+    "files": [
+        "dist",
+        "LICENSE",
+        "README.md"
+    ],
+    "scripts": {
+        "prebuild": "bun build/generateExports.ts",
+        "build": "tsc",
+        "prepare": "bun run build",
+        "prepublish": "bun run build",
+        "version": "git add -A",
+        "postversion": "git push && git push --tags"
     },
-    "./database/relations/*": {
-      "types": "./dist/database/relations/*.d.ts",
-      "default": "./dist/database/relations/*.js"
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com",
+        "access": "restricted"
     },
-    "./database/tables": {
-      "types": "./dist/database/tables/index.d.ts",
-      "default": "./dist/database/tables/index.js"
+    "type": "module",
+    "devDependencies": {
+        "@types/bun": "latest",
+        "typescript": "^5.0.0"
     },
-    "./database/tables/*": {
-      "types": "./dist/database/tables/*.d.ts",
-      "default": "./dist/database/tables/*.js"
+    "peerDependencies": {
+        "typescript": "^5.0.0"
     },
-    "./database/types": {
-      "types": "./dist/database/types/index.d.ts",
-      "default": "./dist/database/types/index.js"
-    },
-    "./database/types/*": {
-      "types": "./dist/database/types/*.d.ts",
-      "default": "./dist/database/types/*.js"
-    },
-    "./trading/*": {
-      "types": "./dist/trading/*.d.ts",
-      "default": "./dist/trading/*.js"
-    },
-    "./events/*": {
-      "types": "./dist/events/*.d.ts",
-      "default": "./dist/events/*.js"
-    },
-    "./logs/*": {
-      "types": "./dist/logs/*.d.ts",
-      "default": "./dist/logs/*.js"
-    },
-    "./positions/*": {
-      "types": "./dist/positions/*.d.ts",
-      "default": "./dist/positions/*.js"
-    },
-    "./conversions/*": {
-      "types": "./dist/conversions/*.d.ts",
-      "default": "./dist/conversions/*.js"
-    },
-    "./utils/*": {
-      "types": "./dist/utils/*.d.ts",
-      "default": "./dist/utils/*.js"
+    "dependencies": {
+        "bignumber.js": "^9.1.2",
+        "drizzle-orm": "^0.36.0"
     }
-  },
-  "typesVersions": {
-    "*": {
-      "database/*": [
-        "./dist/database/*"
-      ],
-      "database/relations": [
-        "./dist/database/relations"
-      ],
-      "database/relations/*": [
-        "./dist/database/relations/*"
-      ],
-      "database/tables": [
-        "./dist/database/tables"
-      ],
-      "database/tables/*": [
-        "./dist/database/tables/*"
-      ],
-      "database/types": [
-        "./dist/database/types"
-      ],
-      "database/types/*": [
-        "./dist/database/types/*"
-      ],
-      "trading/*": [
-        "./dist/trading/*"
-      ],
-      "events/*": [
-        "./dist/events/*"
-      ],
-      "logs/*": [
-        "./dist/logs/*"
-      ],
-      "positions/*": [
-        "./dist/positions/*"
-      ],
-      "conversions/*": [
-        "./dist/conversions/*"
-      ],
-      "utils/*": [
-        "./dist/utils/*"
-      ]
-    }
-  },
-  "files": [
-    "dist",
-    "LICENSE",
-    "README.md"
-  ],
-  "scripts": {
-    "prebuild": "bun build/generateExports.ts",
-    "build": "tsc",
-    "prepare": "bun run build",
-    "prepublish": "bun run build",
-    "version": "git add -A",
-    "postversion": "git push && git push --tags"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "restricted"
-  },
-  "type": "module",
-  "devDependencies": {
-    "@types/bun": "latest",
-    "typescript": "^5.0.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "bignumber.js": "^9.1.2",
-    "drizzle-orm": "^0.36.0"
-  }
 }

@@ -1,228 +1,195 @@
-// build/generateExports.ts
-import { readFileSync, writeFileSync, statSync, readdirSync } from "fs";
-import { join, basename, dirname } from "path";
+import { readdir, stat, writeFile, readFile } from "fs/promises";
+import { join, relative, dirname } from "path";
 
-const IGNORED_PATTERNS = [
-    /^\.git$/,
-    /^\.github$/,
-    /^\.vscode$/,
-    /^\.idea$/,
-    /^\.DS_Store$/,
-    /^\.env/,
-    /^dist$/,
-    /^node_modules$/,
-    /^build$/,
-    /^coverage$/,
-    /^package-lock\.json$/,
-    /^yarn\.lock$/,
-    /^bun\.lockb$/,
-    /^tsconfig/,
-    /^\.eslintrc/,
-    /^\.prettierrc/,
-    /^\.babelrc/,
-    /^npm-debug\.log$/,
-    /^yarn-debug\.log$/,
-    /^yarn-error\.log$/,
-    /^\.log$/,
-    /^\.tmp$/,
-    /^temp$/,
-    /^docs$/,
-    /^README\.md$/,
-    /^LICENSE$/,
-    /^CHANGELOG\.md$/,
-];
-
-type ModuleConfig = {
-    requireSubmodule: boolean;
-    submodules: string[];
-};
-
-type ModuleStructure = {
-    [key: string]: ModuleConfig;
-};
-
-// Define the module structure
-const MODULE_STRUCTURE: ModuleStructure = {
-    database: {
-        requireSubmodule: true,
-        submodules: ["relations", "tables", "types"],
-    },
-    trading: {
-        requireSubmodule: true,
-        submodules: [],
-    },
-    events: {
-        requireSubmodule: true,
-        submodules: [],
-    },
-    logs: {
-        requireSubmodule: true,
-        submodules: [],
-    },
-    positions: {
-        requireSubmodule: true,
-        submodules: [],
-    },
-    conversions: {
-        requireSubmodule: true,
-        submodules: [],
-    },
-    utils: {
-        requireSubmodule: true,
-        submodules: [],
-    },
-};
-
-function shouldInclude(name: string): boolean {
-    return !IGNORED_PATTERNS.some((pattern) => pattern.test(name));
+interface FileStructure {
+    files: string[];
+    directories: Map<string, FileStructure>;
 }
 
-function getAllDirectories(srcPath: string): string[] {
-    try {
-        const entries = readdirSync(srcPath, { withFileTypes: true });
-
-        const dirs = entries
-            .filter((entry) => entry.isDirectory())
-            .filter((entry) => shouldInclude(entry.name))
-            .filter((entry) => !entry.name.startsWith("."))
-            .map((entry) => join(srcPath, entry.name));
-
-        const subdirs = dirs.flatMap((dir) => getAllDirectories(dir));
-
-        return [...dirs, ...subdirs];
-    } catch {
-        return [];
-    }
+interface GeneratorOptions {
+    rootDir: string;
+    ignoreDirs: Set<string>;
+    fileExtensions: Set<string>;
+    excludePatterns: Set<string>;
 }
 
-function generateExportsConfig(directories: string[]) {
-    const exports: Record<string, any> = {
-        ".": {
-            types: "./dist/index.d.ts",
-            default: "./dist/index.js",
-        },
-    };
+class ExportGenerator {
+    private options: GeneratorOptions;
 
-    const typesVersions: Record<string, any> = {
-        "*": {},
-    };
-
-    Object.entries(MODULE_STRUCTURE).forEach(([moduleName, config]) => {
-        if (!config.requireSubmodule) {
-            exports[`./${moduleName}`] = {
-                types: `./dist/${moduleName}/index.d.ts`,
-                default: `./dist/${moduleName}/index.js`,
-            };
-            typesVersions["*"][moduleName] = [`./dist/${moduleName}`];
-        }
-
-        exports[`./${moduleName}/*`] = {
-            types: `./dist/${moduleName}/*.d.ts`,
-            default: `./dist/${moduleName}/*.js`,
+    constructor(options: Partial<GeneratorOptions> = {}) {
+        this.options = {
+            rootDir: process.cwd(),
+            ignoreDirs: new Set([".git", "dist", "node_modules", "build"]),
+            fileExtensions: new Set([".ts"]),
+            excludePatterns: new Set([".d.ts", ".test.ts", ".spec.ts"]),
+            ...options,
         };
-        typesVersions["*"][`${moduleName}/*`] = [`./dist/${moduleName}/*`];
+    }
 
-        config.submodules.forEach((submodule) => {
-            exports[`./${moduleName}/${submodule}`] = {
-                types: `./dist/${moduleName}/${submodule}/index.d.ts`,
-                default: `./dist/${moduleName}/${submodule}/index.js`,
-            };
-            exports[`./${moduleName}/${submodule}/*`] = {
-                types: `./dist/${moduleName}/${submodule}/*.d.ts`,
-                default: `./dist/${moduleName}/${submodule}/*.js`,
-            };
+    private shouldProcessFile(filename: string): boolean {
+        const ext = filename.slice(filename.lastIndexOf("."));
+        if (!this.options.fileExtensions.has(ext)) return false;
+        return ![...this.options.excludePatterns].some((pattern) =>
+            filename.endsWith(pattern),
+        );
+    }
 
-            typesVersions["*"][`${moduleName}/${submodule}`] = [
-                `./dist/${moduleName}/${submodule}`,
-            ];
-            typesVersions["*"][`${moduleName}/${submodule}/*`] = [
-                `./dist/${moduleName}/${submodule}/*`,
-            ];
-        });
-    });
+    private shouldProcessDir(dirname: string): boolean {
+        return !this.options.ignoreDirs.has(dirname);
+    }
 
-    return { exports, typesVersions };
-}
+    private async scanDirectory(dir: string): Promise<FileStructure> {
+        const structure: FileStructure = {
+            files: [],
+            directories: new Map(),
+        };
 
-function generateIndexFile(directory: string) {
-    try {
-        const dirName = basename(directory);
-        const parentDir = basename(dirname(directory));
-        const moduleConfig = MODULE_STRUCTURE[parentDir];
+        try {
+            const entries = await readdir(dir);
 
-        const entries = readdirSync(directory, { withFileTypes: true });
+            for (const entry of entries) {
+                const fullPath = join(dir, entry);
+                const stats = await stat(fullPath);
 
-        const files = entries
-            .filter((entry) => entry.isFile())
-            .filter(
-                (entry) =>
-                    entry.name.endsWith(".ts") &&
-                    entry.name !== "index.ts" &&
-                    !entry.name.endsWith(".test.ts") &&
-                    !entry.name.endsWith(".spec.ts"),
-            )
-            .map((entry) => entry.name);
-
-        if (
-            moduleConfig?.requireSubmodule &&
-            !moduleConfig.submodules.includes(dirName)
-        ) {
-            const content =
-                `// This module requires importing from specific submodules\n` +
-                `// Please import from one of: ${moduleConfig.submodules.join(
-                    ", ",
-                )}`;
-            writeFileSync(join(directory, "index.ts"), content);
-            return;
+                if (stats.isDirectory()) {
+                    if (this.shouldProcessDir(entry)) {
+                        structure.directories.set(
+                            entry,
+                            await this.scanDirectory(fullPath),
+                        );
+                    }
+                } else if (stats.isFile() && this.shouldProcessFile(entry)) {
+                    structure.files.push(entry);
+                }
+            }
+        } catch (error) {
+            console.error(`Error scanning directory ${dir}:`, error);
+            throw error;
         }
 
-        const fileExports = files.map((file) => {
-            const baseName = basename(file, ".ts");
-            return `export * from './${baseName}';`;
-        });
+        return structure;
+    }
 
-        const indexContent = fileExports.join("\n");
+    private generateExportStatement(file: string): string {
+        const baseName = file.slice(0, file.lastIndexOf("."));
+        return `export * from \"./${baseName}\";`;
+    }
 
-        if (indexContent) {
-            writeFileSync(join(directory, "index.ts"), indexContent);
+    private async generateIndexContent(
+        structure: FileStructure,
+        currentDir: string,
+    ): Promise<string> {
+        const exports: string[] = [];
+
+        // Export local files
+        for (const file of structure.files) {
+            if (file !== "index.ts") {
+                exports.push(this.generateExportStatement(file));
+            }
         }
-    } catch (error) {
-        console.error(`Error generating index for ${directory}:`, error);
+
+        // Export subdirectories
+        for (const [dirName] of structure.directories) {
+            exports.push(`export * from './${dirName}';`);
+        }
+
+        return exports.join("\n") + "\n";
+    }
+
+    private async updatePackageJson(rootDir: string): Promise<void> {
+        const packageJsonPath = join(rootDir, "package.json");
+        try {
+            const content = await readFile(packageJsonPath, "utf-8");
+            const pkg = JSON.parse(content);
+
+            // Ensure exports field exists
+            pkg.exports = {
+                ".": {
+                    types: "./dist/index.d.ts",
+                    import: "./dist/index.js",
+                    require: "./dist/index.js",
+                },
+            };
+
+            // Add exports for each subdirectory
+            const structure = await this.scanDirectory(rootDir);
+            for (const [dirName] of structure.directories) {
+                pkg.exports[`./${dirName}`] = {
+                    types: `./dist/${dirName}/index.d.ts`,
+                    import: `./dist/${dirName}/index.js`,
+                    require: `./dist/${dirName}/index.js`,
+                };
+            }
+
+            await writeFile(packageJsonPath, JSON.stringify(pkg, null, 2));
+        } catch (error) {
+            console.error("Error updating package.json:", error);
+            throw error;
+        }
+    }
+
+    private async writeIndexFile(dir: string, content: string): Promise<void> {
+        const indexPath = join(dir, "index.ts");
+        try {
+            await writeFile(indexPath, content);
+        } catch (error) {
+            console.error(`Error writing index file at ${indexPath}:`, error);
+            throw error;
+        }
+    }
+
+    public async generate(): Promise<void> {
+        try {
+            console.log("Scanning directory structure...");
+            const structure = await this.scanDirectory(this.options.rootDir);
+
+            console.log("Generating index files...");
+            // Generate root index.ts
+            const rootIndexContent = await this.generateIndexContent(
+                structure,
+                this.options.rootDir,
+            );
+            await this.writeIndexFile(this.options.rootDir, rootIndexContent);
+
+            // Generate index.ts for each subdirectory
+            const processDirectory = async (
+                dir: string,
+                struct: FileStructure,
+            ) => {
+                for (const [dirName, subStructure] of struct.directories) {
+                    const currentDir = join(dir, dirName);
+                    const indexContent = await this.generateIndexContent(
+                        subStructure,
+                        currentDir,
+                    );
+                    await this.writeIndexFile(currentDir, indexContent);
+                    await processDirectory(currentDir, subStructure);
+                }
+            };
+
+            await processDirectory(this.options.rootDir, structure);
+
+            console.log("Updating package.json...");
+            await this.updatePackageJson(this.options.rootDir);
+
+            console.log("Export generation completed successfully!");
+        } catch (error) {
+            console.error("Error generating exports:", error);
+            throw error;
+        }
     }
 }
 
-function generateMainIndex() {
-    const indexContent = Object.entries(MODULE_STRUCTURE)
-        .map(([moduleName, config]) => {
-            if (config.requireSubmodule) {
-                return `export const ${moduleName} = {};`;
-            } else {
-                return `export * as ${moduleName} from './${moduleName}';`;
-            }
-        })
-        .join("\n");
+// Example usage
+const generator = new ExportGenerator({
+    rootDir: process.cwd(),
+    ignoreDirs: new Set([".git", "dist", "node_modules", "build"]),
+    fileExtensions: new Set([".ts"]),
+    excludePatterns: new Set([".d.ts", ".test.ts", ".spec.ts"]),
+});
 
-    writeFileSync("index.ts", indexContent);
-}
-
-try {
-    const allDirs = getAllDirectories(".")
-        .filter((dir) => !dir.startsWith("./."))
-        .map((dir) => dir.replace(/^\.\//, ""));
-
-    const config = generateExportsConfig(allDirs);
-
-    const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
-    packageJson.exports = config.exports;
-    packageJson.typesVersions = config.typesVersions;
-    writeFileSync("package.json", JSON.stringify(packageJson, null, 2));
-
-    allDirs.forEach((dir) => generateIndexFile(dir));
-
-    generateMainIndex();
-
-    console.log("Successfully generated exports and index files");
-} catch (error) {
-    console.error("Error generating exports:", error);
+// Run the generator
+generator.generate().catch((error) => {
+    console.error("Failed to generate exports:", error);
     process.exit(1);
-}
+});
