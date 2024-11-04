@@ -14,7 +14,7 @@ export function activityEventToDatabase(
         timestamp: new Date(event.timestampUnix * 1000),
         eventType: event.eventType,
         side: event.side,
-        priceAtTime: event.priceAtTime.toString(),
-        positionSize: event.positionSize.toString(),
+        priceAtTime: event.priceAtTime.toFixed(20).toString(),
+        positionSize: event.positionSize.toFixed(20).toString(),
     };
 }

@@ -11,10 +11,10 @@ export function tradeToDatabase(trade: Trade): typeof tradesTable.$inferInsert {
         positionId: trade.positionId,
         traderSafeAddress: trade.traderSafeAddress,
         assetId: trade.assetId,
-        collateral: trade.collateral.toString(),
-        leverage: trade.leverage.toString(),
-        openPositionSize: trade.openPositionSize.toString(),
-        openPrice: trade.openPrice.toString(),
+        collateral: trade.collateral.toFixed(20).toString(),
+        leverage: trade.leverage.toFixed(20).toString(),
+        openPositionSize: trade.openPositionSize.toFixed(20).toString(),
+        openPrice: trade.openPrice.toFixed(20).toString(),
         openTxHash: trade.openTxHash,
         openTimestampUnix: trade.openTimestampUnix,
         openTimestamp: new Date(trade.openTimestampUnix * 1000),
@@ -38,13 +38,17 @@ export function tradeToDatabase(trade: Trade): typeof tradesTable.$inferInsert {
 
     return {
         ...base,
-        closePositionSize: trade.closePositionSize.toString(),
-        closePrice: trade.closePrice.toString(),
+        closePositionSize: trade.closePositionSize.toFixed(20).toString(),
+        closePrice: trade.closePrice.toFixed(20).toString(),
         closeTxHash: trade.closeTxHash,
         closeTimestampUnix: trade.closeTimestampUnix,
         closeTimestamp: new Date(trade.closeTimestampUnix * 1000),
         didGain: trade.didGain,
-        settledProfitOrLossValue: trade.settledProfitOrLossValue.toString(),
-        settledProfitOrLossPercent: trade.settledProfitOrLossPercent.toString(),
+        settledProfitOrLossValue: trade.settledProfitOrLossValue
+            .toFixed(20)
+            .toString(),
+        settledProfitOrLossPercent: trade.settledProfitOrLossPercent
+            .toFixed(20)
+            .toString(),
     };
 }

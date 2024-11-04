@@ -11,17 +11,22 @@ export function positionToDatabase(
         id: position.id,
         userId: position.userId,
         assetId: position.assetId,
-        runningPositionSizeVector:
-            position.runningPositionSizeVector.toString(),
-        runningPositionSizeScalar:
-            position.runningPositionSizeScalar.toString(),
-        runningCollateral: position.runningCollateral.toString(),
-        totalFeesSettled: position.totalFeesSettled.toString(),
-        averageEntryPrice: position.averageEntryPrice.toString(),
-        liquidationPrice: position.liquidationPrice.toString(),
-        settledProfitOrLossValue: position.settledProfitOrLossValue.toString(),
-        settledProfitOrLossPercent:
-            position.settledProfitOrLossPercent.toString(),
+        runningPositionSizeVector: position.runningPositionSizeVector
+            .toFixed(20)
+            .toString(),
+        runningPositionSizeScalar: position.runningPositionSizeScalar
+            .toFixed(20)
+            .toString(),
+        runningCollateral: position.runningCollateral.toFixed(20).toString(),
+        totalFeesSettled: position.totalFeesSettled.toFixed(20).toString(),
+        averageEntryPrice: position.averageEntryPrice.toFixed(20).toString(),
+        liquidationPrice: position.liquidationPrice.toFixed(20).toString(),
+        settledProfitOrLossValue: position.settledProfitOrLossValue
+            .toFixed(20)
+            .toString(),
+        settledProfitOrLossPercent: position.settledProfitOrLossPercent
+            .toFixed(20)
+            .toString(),
         nClosedTrades: position.nClosedTrades,
     };
 }
