@@ -14,29 +14,29 @@ export const positionsTable = pgTable("positions", {
     assetId: uuid("assetId").references(() => assetsTable.id),
     runningPositionSizeVector: numeric("runningPositionSizeVector", {
         precision: 38,
-        scale: 2,
+        scale: 20,
     }),
     runningPositionSizeScalar: numeric("runningPositionSizeScalar", {
         precision: 38,
-        scale: 2,
+        scale: 20,
     }),
     runningCollateral: numeric("runningCollateral", {
         precision: 38,
-        scale: 2,
+        scale: 20,
     }),
-    totalFeesSettled: numeric("totalFeesSettled", { precision: 38, scale: 2 }),
+    totalFeesSettled: numeric("totalFeesSettled", { precision: 38, scale: 20 }),
     averageEntryPrice: numeric("averageEntryPrice", {
         precision: 38,
-        scale: 2,
+        scale: 20,
     }),
-    liquidationPrice: numeric("liquidationPrice", { precision: 38, scale: 2 }),
+    liquidationPrice: numeric("liquidationPrice", { precision: 38, scale: 20 }),
     settledProfitOrLossValue: numeric("settledProfitOrLossValue", {
         precision: 38,
-        scale: 2,
+        scale: 20,
     }),
     settledProfitOrLossPercent: numeric("settledProfitOrLossPercent", {
         precision: 38,
-        scale: 2,
+        scale: 20,
     }),
     nClosedTrades: integer("nClosedTrades"),
     createdAt: timestamp("created_at").defaultNow().notNull(),

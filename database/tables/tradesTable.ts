@@ -16,15 +16,15 @@ export const tradesTable = pgTable("trades", {
         () => usersTable.safeAddress,
     ),
     assetId: uuid("assetId").references(() => assetsTable.id),
-    collateral: numeric("collateral", { precision: 38, scale: 2 }),
-    leverage: numeric("leverage", { precision: 38, scale: 2 }),
-    openPositionSize: numeric("openPositionSize", { precision: 38, scale: 2 }),
+    collateral: numeric("collateral", { precision: 38, scale: 20 }),
+    leverage: numeric("leverage", { precision: 38, scale: 20 }),
+    openPositionSize: numeric("openPositionSize", { precision: 38, scale: 20 }),
     closePositionSize: numeric("closePositionSize", {
         precision: 38,
-        scale: 2,
+        scale: 20,
     }), // null if open
-    openPrice: numeric("openPrice", { precision: 38, scale: 2 }),
-    closePrice: numeric("closePrice", { precision: 38, scale: 2 }), // null if open
+    openPrice: numeric("openPrice", { precision: 38, scale: 20 }),
+    closePrice: numeric("closePrice", { precision: 38, scale: 20 }), // null if open
     openTxHash: varchar("openTxHash", { length: 66 }),
     closeTxHash: varchar("closeTxHash", { length: 66 }), // null if open
     openTimestampUnix: integer("openTimestampUnix"),
@@ -36,11 +36,11 @@ export const tradesTable = pgTable("trades", {
     didGain: boolean("didGain"), // null if open
     settledProfitOrLossValue: numeric("settledProfitOrLossValue", {
         precision: 38,
-        scale: 2,
+        scale: 20,
     }), // null if open
     settledProfitOrLossPercent: numeric("settledProfitOrLossPercent", {
         precision: 38,
-        scale: 2,
+        scale: 20,
     }), // null if open
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),

@@ -14,11 +14,11 @@ export const usersTable = pgTable("users", {
     verifiedAccessAddress: varchar("verifiedAccessAddress", { length: 42 }),
     safeAddress: varchar("safeAddress", { length: 42 }).unique(),
     accessCode: varchar("accessCode"),
-    balance: numeric("balance", { precision: 38, scale: 2 }),
+    balance: numeric("balance", { precision: 38, scale: 20 }),
     netIsProfit: boolean("netIsProfit"),
     netSettledProfitOrLossValue: numeric("netSettledProfitOrLossValue", {
         precision: 38,
-        scale: 2,
+        scale: 20,
     }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
