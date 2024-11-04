@@ -12,7 +12,11 @@ export const positionsTable = pgTable("positions", {
     id: uuid("id").defaultRandom().primaryKey(),
     userId: uuid("userId").references(() => usersTable.id),
     assetId: uuid("assetId").references(() => assetsTable.id),
-    runningPositionSize: numeric("runningPositionSize", {
+    runningPositionSizeVector: numeric("runningPositionSizeVector", {
+        precision: 38,
+        scale: 2,
+    }),
+    runningPositionSizeScalar: numeric("runningPositionSizeScalar", {
         precision: 38,
         scale: 2,
     }),

@@ -11,7 +11,10 @@ export function positionToDatabase(
         id: position.id,
         userId: position.userId,
         assetId: position.assetId,
-        runningPositionSize: position.runningPositionSize.toString(),
+        runningPositionSizeVector:
+            position.runningPositionSizeVector.toString(),
+        runningPositionSizeScalar:
+            position.runningPositionSizeScalar.toString(),
         runningCollateral: position.runningCollateral.toString(),
         totalFeesSettled: position.totalFeesSettled.toString(),
         averageEntryPrice: position.averageEntryPrice.toString(),

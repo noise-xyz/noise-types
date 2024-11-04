@@ -10,8 +10,11 @@ export function positionFromDatabase(
         id: dbPosition.id,
         userId: dbPosition.userId as string,
         assetId: dbPosition.assetId as string,
-        runningPositionSize: parseFloat(
-            dbPosition.runningPositionSize as string,
+        runningPositionSizeVector: parseFloat(
+            dbPosition.runningPositionSizeVector as string,
+        ),
+        runningPositionSizeScalar: parseFloat(
+            dbPosition.runningPositionSizeScalar as string,
         ),
         runningCollateral: parseFloat(dbPosition.runningCollateral as string),
         totalFeesSettled: parseFloat(dbPosition.totalFeesSettled as string),
