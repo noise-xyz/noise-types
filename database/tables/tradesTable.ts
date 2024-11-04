@@ -7,7 +7,7 @@ import {
     uuid,
     varchar,
 } from "drizzle-orm/pg-core";
-import { usersTable, assetsTable, positionsTable } from './';
+import { usersTable, assetsTable, positionsTable } from "./";
 
 export const tradesTable = pgTable("trades", {
     id: integer("id").primaryKey().notNull(),

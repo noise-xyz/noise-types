@@ -11,11 +11,7 @@ export function positionToDatabase(
         id: position.id,
         userId: position.userId,
         assetId: position.assetId,
-        runningPositionSizeVector:
-            position.runningPositionSizeVector.toString(),
-        runningPositionSizeScalar:
-            position.runningPositionSizeScalar.toString(),
-        runningQuantity: position.runningQuantity.toString(),
+        runningPositionSize: position.runningPositionSize.toString(),
         runningCollateral: position.runningCollateral.toString(),
         totalFeesSettled: position.totalFeesSettled.toString(),
         averageEntryPrice: position.averageEntryPrice.toString(),
@@ -23,7 +19,6 @@ export function positionToDatabase(
         settledProfitOrLossValue: position.settledProfitOrLossValue.toString(),
         settledProfitOrLossPercent:
             position.settledProfitOrLossPercent.toString(),
-        nOpenedTrades: position.nOpenedTrades,
         nClosedTrades: position.nClosedTrades,
     };
 }

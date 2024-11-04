@@ -12,16 +12,7 @@ export const positionsTable = pgTable("positions", {
     id: uuid("id").defaultRandom().primaryKey(),
     userId: uuid("userId").references(() => usersTable.id),
     assetId: uuid("assetId").references(() => assetsTable.id),
-    direction: varchar("direction"),
-    runningPositionSizeVector: numeric("runningPositionSizeVector", {
-        precision: 38,
-        scale: 2,
-    }),
-    runningPositionSizeScalar: numeric("runningPositionSizeScalar", {
-        precision: 38,
-        scale: 2,
-    }),
-    runningQuantity: numeric("runningQuantity", {
+    runningPositionSize: numeric("runningPositionSize", {
         precision: 38,
         scale: 2,
     }),
@@ -43,7 +34,6 @@ export const positionsTable = pgTable("positions", {
         precision: 38,
         scale: 2,
     }),
-    nOpenedTrades: integer("nOpenedTrades"),
     nClosedTrades: integer("nClosedTrades"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
