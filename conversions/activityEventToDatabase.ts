@@ -1,6 +1,5 @@
-import { activityEventsTable } from '../database/tables';
-import type { ActivityEvent } from '../events';
-import { toPostgresNumeric } from '../utils/numbers';
+import { activityEventsTable } from "../database/tables";
+import type { ActivityEvent } from "../events";
 /**
  * Converts an ActivityEvent object to database format
  */
@@ -15,7 +14,7 @@ export function activityEventToDatabase(
         timestamp: new Date(event.timestampUnix * 1000),
         eventType: event.eventType,
         side: event.side,
-        priceAtTime: toPostgresNumeric(event.priceAtTime),
-        positionSize: toPostgresNumeric(event.positionSize),
+        priceAtTime: event.priceAtTime.toString(),
+        positionSize: event.positionSize.toString(),
     };
 }

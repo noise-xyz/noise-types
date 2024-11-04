@@ -6,7 +6,7 @@ import {
     timestamp,
     integer,
 } from "drizzle-orm/pg-core";
-import { usersTable, assetsTable } from './';
+import { usersTable, assetsTable } from "./";
 
 export const positionsTable = pgTable("positions", {
     id: uuid("id").defaultRandom().primaryKey(),
@@ -43,6 +43,7 @@ export const positionsTable = pgTable("positions", {
         precision: 38,
         scale: 2,
     }),
+    nOpenedTrades: integer("nOpenedTrades"),
     nClosedTrades: integer("nClosedTrades"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),

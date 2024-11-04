@@ -1,6 +1,5 @@
-import { EventType } from './';
-import { TradeSide } from '../trading';
-import BigNumber from "bignumber.js";
+import { EventType } from "./";
+import { TradeSide } from "../trading";
 
 export type ActivityEvent = {
     id: string;
@@ -9,6 +8,6 @@ export type ActivityEvent = {
     timestampUnix: number;
     eventType: EventType;
     side: TradeSide;
-    priceAtTime: BigNumber;
-    positionSize: BigNumber;
+    priceAtTime: number;
+    positionSize: number;
 };

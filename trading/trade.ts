@@ -1,15 +1,14 @@
-import { TradeSide, TradeStatus } from './';
-import BigNumber from "bignumber.js";
+import { TradeSide, TradeStatus } from "./";
 
 export type Trade = {
     id: number;
     positionId: string;
     traderSafeAddress: string;
     assetId: string;
-    collateral: BigNumber;
-    leverage: BigNumber;
-    openPositionSize: BigNumber;
-    openPrice: BigNumber;
+    collateral: number;
+    leverage: number;
+    openPositionSize: number;
+    openPrice: number;
     openTxHash: string;
     openTimestampUnix: number;
     side: TradeSide;
@@ -27,12 +26,12 @@ export type Trade = {
       }
     | {
           status: TradeStatus.CLOSED | TradeStatus.LIQUIDATED;
-          closePositionSize: BigNumber;
-          closePrice: BigNumber;
+          closePositionSize: number;
+          closePrice: number;
           closeTxHash: string;
           closeTimestampUnix: number;
           didGain: boolean;
-          settledProfitOrLossValue: BigNumber;
-          settledProfitOrLossPercent: BigNumber;
+          settledProfitOrLossValue: number;
+          settledProfitOrLossPercent: number;
       }
 );

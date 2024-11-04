@@ -1,8 +1,6 @@
-import { tradesTable } from '../database/tables';
-import type { Trade } from '../trading';
-import { TradeSide, TradeStatus } from '../trading';
-import { fromPostgresNumeric } from '../utils/numbers';
-
+import { tradesTable } from "../database/tables";
+import type { Trade } from "../trading";
+import { TradeSide, TradeStatus } from "../trading";
 /**
  * Converts a database trade record to a Trade object
  */
@@ -14,10 +12,10 @@ export function tradeFromDatabase(
         positionId: dbTrade.positionId as string,
         traderSafeAddress: dbTrade.traderSafeAddress as string,
         assetId: dbTrade.assetId as string,
-        collateral: fromPostgresNumeric(dbTrade.collateral),
-        leverage: fromPostgresNumeric(dbTrade.leverage),
-        openPositionSize: fromPostgresNumeric(dbTrade.openPositionSize),
-        openPrice: fromPostgresNumeric(dbTrade.openPrice),
+        collateral: parseFloat(dbTrade.collateral as string),
+        leverage: parseFloat(dbTrade.leverage as string),
+        openPositionSize: parseFloat(dbTrade.openPositionSize as string),
+        openPrice: parseFloat(dbTrade.openPrice as string),
         openTxHash: dbTrade.openTxHash as string,
         openTimestampUnix: dbTrade.openTimestampUnix as number,
         side: dbTrade.side as TradeSide,
@@ -41,16 +39,16 @@ export function tradeFromDatabase(
     return {
         ...base,
         status: dbTrade.status as TradeStatus.CLOSED | TradeStatus.LIQUIDATED,
-        closePositionSize: fromPostgresNumeric(dbTrade.closePositionSize),
-        closePrice: fromPostgresNumeric(dbTrade.closePrice),
+        closePositionSize: parseFloat(dbTrade.closePositionSize as string),
+        closePrice: parseFloat(dbTrade.closePrice as string),
         closeTxHash: dbTrade.closeTxHash!,
         closeTimestampUnix: dbTrade.closeTimestampUnix!,
         didGain: dbTrade.didGain!,
-        settledProfitOrLossValue: fromPostgresNumeric(
-            dbTrade.settledProfitOrLossValue,
+        settledProfitOrLossValue: parseFloat(
+            dbTrade.settledProfitOrLossValue as string,
         ),
-        settledProfitOrLossPercent: fromPostgresNumeric(
-            dbTrade.settledProfitOrLossPercent,
+        settledProfitOrLossPercent: parseFloat(
+            dbTrade.settledProfitOrLossPercent as string,
         ),
     };
 }

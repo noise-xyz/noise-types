@@ -1,17 +1,16 @@
-import BigNumber from "bignumber.js";
-
 export type Position = {
     id: string;
     userId: string;
     assetId: string;
-    runningPositionSizeVector: BigNumber; // Signed value (negative for shorts)
-    runningPositionSizeScalar: BigNumber;
-    runningQuantity: BigNumber;
-    runningCollateral: BigNumber;
-    totalFeesSettled: BigNumber;
-    averageEntryPrice: BigNumber;
-    liquidationPrice: BigNumber;
-    settledProfitOrLossValue: BigNumber;
-    settledProfitOrLossPercent: BigNumber;
+    runningPositionSizeVector: number; // Signed value (negative for shorts)
+    runningPositionSizeScalar: number;
+    runningQuantity: number;
+    runningCollateral: number;
+    totalFeesSettled: number;
+    averageEntryPrice: number;
+    liquidationPrice: number;
+    settledProfitOrLossValue: number;
+    settledProfitOrLossPercent: number;
+    nOpenedTrades: number;
     nClosedTrades: number;
 };

@@ -1,6 +1,5 @@
-import { positionsTable } from '../database/tables';
-import type { Position } from '../positions';
-import { toPostgresNumeric } from '../utils/numbers';
+import { positionsTable } from "../database/tables";
+import type { Position } from "../positions";
 
 /**
  * Converts a Position object to database format
@@ -12,23 +11,19 @@ export function positionToDatabase(
         id: position.id,
         userId: position.userId,
         assetId: position.assetId,
-        runningPositionSizeVector: toPostgresNumeric(
-            position.runningPositionSizeVector,
-        ),
-        runningPositionSizeScalar: toPostgresNumeric(
-            position.runningPositionSizeScalar,
-        ),
-        runningQuantity: toPostgresNumeric(position.runningQuantity),
-        runningCollateral: toPostgresNumeric(position.runningCollateral),
-        totalFeesSettled: toPostgresNumeric(position.totalFeesSettled),
-        averageEntryPrice: toPostgresNumeric(position.averageEntryPrice),
-        liquidationPrice: toPostgresNumeric(position.liquidationPrice),
-        settledProfitOrLossValue: toPostgresNumeric(
-            position.settledProfitOrLossValue,
-        ),
-        settledProfitOrLossPercent: toPostgresNumeric(
-            position.settledProfitOrLossPercent,
-        ),
+        runningPositionSizeVector:
+            position.runningPositionSizeVector.toString(),
+        runningPositionSizeScalar:
+            position.runningPositionSizeScalar.toString(),
+        runningQuantity: position.runningQuantity.toString(),
+        runningCollateral: position.runningCollateral.toString(),
+        totalFeesSettled: position.totalFeesSettled.toString(),
+        averageEntryPrice: position.averageEntryPrice.toString(),
+        liquidationPrice: position.liquidationPrice.toString(),
+        settledProfitOrLossValue: position.settledProfitOrLossValue.toString(),
+        settledProfitOrLossPercent:
+            position.settledProfitOrLossPercent.toString(),
+        nOpenedTrades: position.nOpenedTrades,
         nClosedTrades: position.nClosedTrades,
     };
 }
