@@ -5,6 +5,7 @@ import {
     positionsTable,
     assetsTable,
     activityEventsTable,
+    refreshTokensTable
 } from '../tables';
 import {
     usersRelations,
@@ -28,4 +29,5 @@ export type DrizzleSchema = {
     assetsRelations: typeof assetsRelations;
     activityEventsTable: typeof activityEventsTable;
     activityEventsRelations: typeof activityEventsRelations;
+    refreshTokensTable: typeof refreshTokensTable;
 };

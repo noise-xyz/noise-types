@@ -1,5 +1,7 @@
 export type CloseTradeParams = {
     safeAddress: string;
-    tradeId: number;
-    closingPrice: number;
+    positionId: string;
+    assetPrice: number;
+    userBalance: number;
+    accessToken: string;
 };
