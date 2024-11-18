@@ -4,7 +4,7 @@ import {
     usersTable,
     assetsTable,
     positionsTable,
-} from '../tables';
+} from "../tables";
 
 export const tradesRelations = relations(tradesTable, ({ one }) => ({
     position: one(positionsTable, {

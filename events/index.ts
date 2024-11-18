@@ -1,2 +1,2 @@
-export * from './ActivityEvent';
-export * from './EventType';
+export * from "./ActivityEvent";
+export * from "./EventType";
