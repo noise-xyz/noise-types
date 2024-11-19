@@ -1,4 +1,4 @@
-import { TradeSide, TradeStatus } from "./";
+import { TradeSide, TradeStatus } from ".";
 
 export type Trade = {
     id: number;
