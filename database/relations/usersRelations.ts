@@ -4,7 +4,7 @@ import {
     positionsTable,
     activityEventsTable,
     tradesTable,
-} from '../tables';
+} from "../tables";
 
 export const usersRelations = relations(usersTable, ({ many }) => ({
     positions: many(positionsTable),

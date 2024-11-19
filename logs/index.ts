@@ -1,3 +1,3 @@
-export * from './DecodedTradeOpened';
-export * from './DecodedLog';
-export * from './DecodedTradeClosed';
+export * from "./DecodedTradeOpened";
+export * from "./DecodedLog";
+export * from "./DecodedTradeClosed";

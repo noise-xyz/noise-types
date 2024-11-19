@@ -3,5 +3,7 @@ export type OpenTradeParams = {
     tradeSize: number;
     multiplier: number;
     isLong: boolean;
-    openPrice: number;
+    assetId: string;
+    assetPrice: number;
+    accessToken: string;
 };

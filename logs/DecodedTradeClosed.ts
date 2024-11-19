@@ -1,4 +1,4 @@
-import { EventType } from '../events';
+import { EventType } from "../events";
 
 export type DecodedTradeClosed = {
     eventType: EventType.CLOSE | EventType.LIQUIDATION;

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { positionsTable, usersTable, tradesTable } from '../tables';
+import { positionsTable, usersTable, tradesTable } from "../tables";
 
 export const positionsRelations = relations(
     positionsTable,
