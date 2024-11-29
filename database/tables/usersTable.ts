@@ -20,6 +20,7 @@ export const usersTable = pgTable("users", {
         precision: 38,
         scale: 20,
     }),
+    email: varchar("email"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
